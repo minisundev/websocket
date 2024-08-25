@@ -8,45 +8,24 @@ import org.slf4j.LoggerFactory
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.handler.annotation.Payload
 import org.springframework.messaging.handler.annotation.SendTo
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor
 import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.stereotype.Controller
+import org.springframework.validation.annotation.Validated
 
 
 @Controller
 @RequiredArgsConstructor
-class ChatController(
-) {
+class ChatController {
     private val logger: Logger = LoggerFactory.getLogger(ChatController::class.java)
-    private val simpMessagingTemplate: SimpMessagingTemplate? = null
-
-    @MessageMapping("/chat/send")
-    fun sendMsg(@Payload data: Map<String?, Any?>?) {
-        simpMessagingTemplate!!.convertAndSend("/topic/1", data!!)
-    }
 
     @MessageMapping("/chat")
     @SendTo("/topic/messages")
     fun send(chat: ChatRequest): ChatResponse {
         return ChatResponse(
             id = 1,
-            username = "username1",
+            username = chat.username,
             content = chat.content,
         )
-    }
-
-    @MessageMapping("/createChat")
-    @SendTo("/topic/response")
-    fun createChat(
-        @Payload @Validated request: ChatRequest,
-        headerAccessor: SimpMessageHeaderAccessor,
-    ): ChatResponse {
-        logger.info("createChat")
-
-        logger.info("Creating Room chat with request: $request")
-        val result = chatService.createRoomChat(request)
-
-        logger.info("Chat created successfully with request: $request")
-
-        return result
     }
 }
